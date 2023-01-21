@@ -30,7 +30,7 @@ export class Launcher {
       this.position = position;
       this.rotationSpeed = 0;
       this.maxMissiles = maxMissiles;
-      this.currentMissiles = 0;
+      this.currentMissiles = 1;
       this.missileSpeed = missileSpeed;
       this.missiles = [];
       this.angle = 0;
@@ -94,7 +94,7 @@ export class Launcher {
   
     // Fires a missile in the current direction
     fire(mousePosition:[number,number], missileArray: Missile[]) {
-        const slowFactor = 100
+        const slowFactor = 200
         const fixedDirection = this.direction - 90;
         const missileVelocity:[number,number] = [Math.cos(fixedDirection * Math.PI / 180), Math.sin(fixedDirection * Math.PI / 180)];
         const missile = new Missile([this.position[0], this.position[1]], mousePosition, this.direction, [missileVelocity[0] * this.missileSpeed/slowFactor, missileVelocity[1] * this.missileSpeed/slowFactor], 1);

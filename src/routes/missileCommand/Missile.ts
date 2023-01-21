@@ -9,10 +9,11 @@ export class Missile {
     velocity: [number, number];
     orientation:number
     explodeCoords: [number, number];
-    public health: number;
-    private startTime: number;
+    health: number;
+    startTime: number;
     width:number = 8
     height:number = 12
+    detonateDistance = 10
 
   
     // Create a new missile
@@ -37,7 +38,7 @@ export class Missile {
       this.position[1] += this.velocity[1] //* elapsedTime;
       missilePositionStore.set([this.position[0], this.position[1]])
 
-      if (distanceTo(this.position[0], this.position[1], this.explodeCoords[0], this.explodeCoords[1]) < 15) {
+      if (distanceTo(this.position[0], this.position[1], this.explodeCoords[0], this.explodeCoords[1]) < this.detonateDistance) {
         //Slice the missile from game's missile array
         game.missiles = game.missiles.filter(m => m != this)
         //Add an explosion to the game's explosion array

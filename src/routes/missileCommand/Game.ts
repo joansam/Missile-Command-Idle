@@ -4,25 +4,23 @@ import { Launcher } from './Launcher';
 import type { Explosion } from './Explosion';
 import { mousePositionStore, paused, gameSpeed } from './stores';
 
-
 export class Game {
 
-    private width: number;
-    private height: number;
-    private context:CanvasRenderingContext2D;
-    public launcher: Launcher;
-    public missiles: Missile[];
+    private width: number
+    private height: number
+    private context:CanvasRenderingContext2D
+    public launcher: Launcher
+    public missiles: Missile[]
     public numMissiles:number = 20
-    roundLength:number = 30
     launchTimes:number[] = []
-    public explosions: Explosion[];
-    private score: number;
+    public explosions: Explosion[]
     startTime:number
     elapsedTime = 0
-
-  
-    // The game state (playing or game over)
-    private playing: boolean;
+    private actionCounter = 0
+    private tickLength = 1
+    private actionLength = 2
+    roundLength:number = 60
+      private playing: boolean;
   
     //CONSTRUCTOR
     constructor(width: number, height: number, ctx:CanvasRenderingContext2D) {
@@ -36,11 +34,9 @@ export class Game {
         this.launcher = new Launcher([250, 490], 100, 200);
         this.missiles = [];
         this.explosions = [];
-        this.score = 0;
         this.playing = true;
         this.startTime = performance.now();
         this.setLaunchTimes()
-        
     }
     public playPause() {
       paused.update(state => !state)
@@ -50,6 +46,7 @@ export class Game {
         })
       }
     }
+    //These are separate functions bc it's easier to call them from the UI in its idiomatic button syntax. Can change if you want tho.
     public increaseGameSpeed() {
       gameSpeed.update(speed => speed * 2)
     }
@@ -59,22 +56,26 @@ export class Game {
 
     // Update the game state
     public update() {
-      if (get(paused)) {return
-        return
-      }
+      if (get(paused)) {return}
       const mouseX = get(mousePositionStore)[0]
       const mouseY = get(mousePositionStore)[1]
-      this.launcher.update([mouseX, mouseY]);
-
-      // Update the incoming missiles
-      for (let i = 0; i < this.missiles.length; i++) {
-          this.missiles[i].update(this);
-      }
-      // Update the explosion effects
-      for (let i = 0; i < this.explosions.length; i++) {
-          this.explosions[i].update(this);
-      }
+      //Right now, launcher's update function is just updating its angle
+      this.launcher.update([mouseX, mouseY])
       this.draw()
+
+      this.actionCounter += get(gameSpeed) * this.tickLength
+      //Do gameSpeed-sensitive actions
+      if (this.actionCounter > this.actionLength) {
+        // Update the incoming missiles
+        for (let i = 0; i < this.missiles.length; i++) {
+            this.missiles[i].update(this)
+        }
+        // Update the explosion effects
+        for (let i = 0; i < this.explosions.length; i++) {
+            this.explosions[i].update(this)
+        }
+        this.actionCounter -= this.actionLength
+      }
 
       this.elapsedTime = (performance.now() - this.startTime) / 1000;
       const validTimes = this.launchTimes.filter(t => t == Math.round(this.elapsedTime)).length
@@ -85,9 +86,8 @@ export class Game {
         const index = this.launchTimes.indexOf(Math.round(this.elapsedTime))
         this.launchTimes = this.launchTimes.slice(0, index).concat(this.launchTimes.slice(index + 1))
       }
-      requestAnimationFrame(() => {
-        this.update()
-      })
+      //setTimeout(this.update(), this.tickLength)
+      setTimeout( () => this.update(), this.tickLength )
     }
 
       // Draw the game graphics
@@ -115,7 +115,7 @@ export class Game {
   
     // Add a new incoming missile to the game
     public addMissile() {
-        const speed = 1
+        const speed = .5
         // Generate a random position for the missile
         const x = Math.floor(Math.random() * (this.width));
         const y = -10;
