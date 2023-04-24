@@ -1,81 +1,57 @@
 import { missilePositionStore } from "./stores";
 import { checkRectanglesCollision, distanceTo } from "./Utilities";
-import type { Game } from "./Game";
 import { Explosion } from "./Explosion";
 
 export class Missile {
-    // The missile's position
-    position: [number, number];
-    velocity: [number, number];
-    orientation:number
-    explodeCoords: [number, number];
-    health: number;
-    startTime: number;
-    width:number = 8
-    height:number = 12
-    detonateDistance = 10
+  // The missile's sprite
+  scene: Phaser.Scene
+  sprite: Phaser.GameObjects.Sprite;
+  explodeCoords: [number, number];
+  velocity: [number, number];
+  orientation:number
+  health: number;
+  startTime: number;
+  detonateDistance = 10
 
-  
-    // Create a new missile
-    constructor(position:[number,number], explodeCoords:[number,number],direction: number, velocity:[number,number], health: number) {
-      this.position = [position[0], position[1]];
-      this.explodeCoords = [explodeCoords[0], explodeCoords[1]];
-      this.velocity = [velocity[0],velocity[1]];
-      this.orientation = direction
-      this.health = health;
-      this.startTime = Date.now();
-
-      // Create a canvas context for the missile
-    }
-  
-    // Update the missile's position
-    public update(game:Game) {
-      // Calculate the elapsed time since the missile was created
-      const elapsedTime = Date.now() - this.startTime;
-
-      // Update the missile's position based on its velocity and the elapsed time
-      this.position[0] += this.velocity[0] //* elapsedTime;
-      this.position[1] += this.velocity[1] //* elapsedTime;
-      missilePositionStore.set([this.position[0], this.position[1]])
-
-      if (distanceTo(this.position[0], this.position[1], this.explodeCoords[0], this.explodeCoords[1]) < this.detonateDistance) {
-        //Slice the missile from game's missile array
-        game.missiles = game.missiles.filter(m => m != this)
-        //Add an explosion to the game's explosion array
-        game.explosions.push(new Explosion(this.position[0], this.position[1], 5))
-      }
-
-      // Check for collisions
-      const thisRect = {x:this.position[0], y:this.position[1], width:1, height:1, angle:1}
-      const otherRect = {x:1, y:1, width:1, height:1, angle:1}
-      checkRectanglesCollision(thisRect, otherRect)
-    }
-  
-    // Draw the missile on the canvas
-    public draw(context: CanvasRenderingContext2D) {
-      //Save the current context to avoid modifying prior state
-      context.save();
-      // Translate the canvas context to the position of the missile
-      context.translate(this.position[0], this.position[1]);
-      // Rotate the canvas context to match the direction of the missile
-      context.rotate(this.orientation*Math.PI/180);
-      // Draw the triangle
-      context.beginPath();
-      context.moveTo(-this.width/2, 0);
-      context.lineTo(this.width/2, 0);
-      context.lineTo(0, -this.height);
-      context.closePath();
-      context.fillStyle = "white";
-      context.fill();
-      // Restore the canvas context to its original state
-      context.restore();
-    }
-
-    // Currently unused
-    collidesWith(other: Missile) {
-      const dx = this.position[0] - other.position[0];
-      const dy = this.position[1] - other.position[1];
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      return distance < 2;
-    }
+  // Create a new missile
+  constructor(scene: Phaser.Scene, position:[number,number], explodeCoords:[number,number],direction: number, velocity:[number,number], health: number) {
+    this.scene = scene
+    this.sprite = scene.add.sprite(position[0], position[1], 'missile');
+    this.explodeCoords = [explodeCoords[0], explodeCoords[1]];
+    this.velocity = [velocity[0],velocity[1]];
+    this.orientation = direction
+    this.health = health;
+    this.startTime = Date.now();
   }
+
+  // Update the missile's position and orientation
+  public update(missiles:Missile[], explosions:Explosion[]):Missile[] {
+    // Calculate the elapsed time since the missile was created
+    const elapsedTime = Date.now() - this.startTime;
+
+    // Update the missile's position based on its velocity and the elapsed time
+    this.sprite.x += this.velocity[0] //* elapsedTime;
+    this.sprite.y += this.velocity[1] //* elapsedTime;
+    missilePositionStore.set([this.sprite.x, this.sprite.y])
+
+    // Rotate the missile sprite to match the direction of the missile
+    this.sprite.rotation = this.orientation*Math.PI/180;
+
+    // Check for detonation
+    if (distanceTo(this.sprite.x, this.sprite.y, this.explodeCoords[0], this.explodeCoords[1]) < this.detonateDistance) {
+      //Slice the missile from game's missile array
+      const newMissiles = missiles.filter(m => m != this)
+      //Add an explosion to the game's explosion array
+      explosions.push(new Explosion(this.scene, this.sprite.x, this.sprite.y, 5))
+      // Destroy the missile sprite
+      this.sprite.destroy();
+      return newMissiles;
+    }
+
+    // Check for collisions
+    const thisRect = {x:this.sprite.x, y:this.sprite.y, width:1, height:1, angle:1}
+    const otherRect = {x:1, y:1, width:1, height:1, angle:1}
+    checkRectanglesCollision(thisRect, otherRect)
+    return missiles;
+  }
+}

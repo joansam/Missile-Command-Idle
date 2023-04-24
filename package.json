@@ -16,8 +16,9 @@
 		"@fontsource/fira-mono": "^4.5.10",
 		"@neoconfetti/svelte": "^1.0.0",
 		"@playwright/test": "^1.28.1",
+		"@rollup/plugin-commonjs": "^24.1.0",
 		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/kit": "next",
+		"@sveltejs/kit": "^1.15.8",
 		"@tsconfig/svelte": "^3.0.0",
 		"@types/cookie": "^0.5.1",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
@@ -37,6 +38,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"phaser": "^3.55.2"
+		"phaser": "^3.60.0"
 	}
 }
