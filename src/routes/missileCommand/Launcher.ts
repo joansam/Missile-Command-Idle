@@ -23,6 +23,7 @@ export class Launcher {
     this.sprite = scene.add.sprite(position[0], position[1], 'launcher');
     this.spriteBody = scene.add.sprite(position[0] - 1.5, position[1] + 20, 'launcherBody');
     this.spriteBody.setScale(.3)
+    this.spriteBody.setDepth(1);
     //Rotate spriteBody to match the launcher's angle
     //this.spriteBody.rotation = Phaser.Math.DegToRad(-90);
     this.sprite.setOrigin(0.5, 1);
@@ -71,7 +72,7 @@ export class Launcher {
 
   // Fires a missile in the current direction
   public fire(scene: Phaser.Scene, mousePosition:[number,number], missileArray: Missile[]) {
-    const slowFactor = 200
+    const slowFactor = 75
     const fixedDirection = this.direction - 90
     const missileVelocity:[number,number] = [Math.cos(fixedDirection * Math.PI / 180), Math.sin(fixedDirection * Math.PI / 180)]
     const missile = new Missile(scene, [this.position.x, this.position.y], mousePosition, this.direction, [missileVelocity[0] * this.missileSpeed/slowFactor, missileVelocity[1] * this.missileSpeed/slowFactor], 1)

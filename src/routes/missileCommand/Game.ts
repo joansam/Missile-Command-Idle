@@ -79,9 +79,7 @@ class GameScene extends Phaser.Scene {
             }
 
             // Update the explosion effects
-            for (let i = 0; i < explosions.length; i++) {
-                explosions[i].update(explosions);
-            }
+            explosions = explosions.filter(explosion => !explosion.update());
             actionCounter -= actionLength;
         }
 
@@ -137,7 +135,7 @@ function setLaunchTimes() {
   }
 
 function addMissile(scene: Phaser.Scene) {
-    const speed = .5
+    const speed = 1
     // Generate a random position for the missile
     const x = Math.floor(Math.random() * (width));
     const y = -10;
@@ -158,7 +156,6 @@ function addMissile(scene: Phaser.Scene) {
 }
 
 function addExplosion(scene: Phaser.Scene, x: number, y: number, lifetime: number) {
-    // Create the explosion
     const explosion = new Explosion(scene, x, y, lifetime);
     explosions.push(explosion);
 }
