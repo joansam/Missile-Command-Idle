@@ -1,38 +1,32 @@
 import {Missile} from './Missile'
 import { launcherPositionStore, missilePositionStore, mousePositionStore } from './stores'
 
-// Phaser comments:
-// In this version of the `Launcher` class, we've removed the `draw()` method, as we don't need to manually draw the launcher sprite on the canvas. 
-// Instead, we create the launcher sprite in the constructor using `scene.add.sprite()`. 
-// We also use the `Phaser.Math.Angle.BetweenPoints()` method to calculate the angle between the launcher's position and the mouse position.
-// And we update the launcher's rotation using this angle.
-// Finally, we pass the `scene` object to the `fire()` method so that we can create the missile sprite using `scene.add.sprite()`.
-
 export class Launcher {
-  // The current direction of the launcher (in degrees)
-  direction: number
-
-  // The position of the launcher on the screen
+  direction: number //in degrees
   position: Phaser.Math.Vector2
-
-  // The speed at which the launcher can rotate (in degrees per second)
-  rotationSpeed: number
-
-  // The maximum number of missiles the launcher can fire at once
+  rotationSpeed: number //in degrees per second
   maxMissiles: number
-
-  // The current number of missiles the launcher has fired
   currentMissiles: number
 
-  // The speed at which the missiles are fired (in pixels per second)
-  missileSpeed: number
+  missileSpeed: number //in pixels per second
 
-  // An array of missiles currently in flight
+  scene: Phaser.Scene
+  sprite: Phaser.GameObjects.Sprite;
+  spriteBody: Phaser.GameObjects.Sprite;
+
   missiles: Missile[]
 
   angle:number;
 
   constructor(scene: Phaser.Scene, position: [number, number], maxMissiles: number, missileSpeed: number) {
+    this.scene = scene
+    this.sprite = scene.add.sprite(position[0], position[1], 'launcher');
+    this.spriteBody = scene.add.sprite(position[0] - 1.5, position[1] + 20, 'launcherBody');
+    this.spriteBody.setScale(.3)
+    //Rotate spriteBody to match the launcher's angle
+    //this.spriteBody.rotation = Phaser.Math.DegToRad(-90);
+    this.sprite.setOrigin(0.5, 1);
+    this.spriteBody.setOrigin(0.5, .5);
     this.direction = 0
     this.position = new Phaser.Math.Vector2(position[0], position[1])
     this.rotationSpeed = 0
@@ -41,10 +35,6 @@ export class Launcher {
     this.missileSpeed = missileSpeed
     this.missiles = []
     this.angle = 0
-
-    // Create the launcher sprite
-    const launcherSprite = scene.add.sprite(position[0], position[1], 'launcher');
-    launcherSprite.setOrigin(0.5);
   }
 
   // Updates the launcher's direction based on the player's mouse
@@ -53,10 +43,19 @@ export class Launcher {
     const radians = Phaser.Math.Angle.BetweenPoints(this.position, new Phaser.Math.Vector2(mousePosition[0], mousePosition[1]))
 
     // Convert the angle from radians to degrees
-    this.angle = radians * Phaser.Math.RAD_TO_DEG
+    let angle = radians * Phaser.Math.RAD_TO_DEG;
 
-    // Rotate the launcher towards the calculated angle
-    this.direction = this.angle
+    // Adjust the angle by subtracting 90 degrees to correct the sprite's orientation
+    angle += 90;
+
+    // Restrict the angle to stay above the x-axis
+    //angle = Phaser.Math.Clamp(angle, -90, 90);
+
+    // Update the launcher's angle
+    this.angle = angle;
+    this.sprite.rotation = Phaser.Math.DegToRad(this.angle);
+    this.direction = this.angle //Why is this here? It seems redundant
+    
     //this.direction += (this.angle - this.direction) * this.rotationSpeed * 0.01;
 
     // Update each missile

@@ -2,7 +2,7 @@
 	"name": "myapp",
 	"version": "0.0.1",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite dev --mode development",
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "playwright test",
@@ -38,6 +38,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"phaser": "^3.60.0"
+		"phaser": "^3.80.1"
 	}
 }

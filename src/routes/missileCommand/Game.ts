@@ -1,24 +1,31 @@
-import Phaser from 'phaser';
-import { Missile } from './Missile';
-import { Launcher } from './Launcher';
-import type { Explosion } from './Explosion';
-import { mousePositionStore, paused, gameSpeed } from './stores';
-import { get } from 'svelte/store';
+import { onMount } from 'svelte';
+import { Missile } from './Missile'
+import { Launcher } from './Launcher'
+import { Explosion } from './Explosion'
+import { mousePositionStore, paused, gameSpeed } from './stores'
+import { get, writable } from 'svelte/store'
 
-let width = 800;
-let height = 600;
+export const game = writable(null);
+
+let width = 800
+let height = 600
 let launcher: Launcher;
 let missiles: Missile[] = [];
-let numMissiles:number = 20;
+let numMissiles:number = 20
 let explosions: Explosion[] = [];
-let startTime: number;
-let elapsedTime: number = 0;
-let actionCounter: number = 0;
-let tickLength: number = 1;
-let actionLength: number = 2;
-let roundLength: number = 60;
+let startTime: number = 0
+let elapsedTime: number = 0
+let actionCounter: number = 0
+let tickLength: number = 1
+let actionLength: number = 2
+let roundLength: number = 60
 let launchTimes:number[] = []
-let playing: boolean;
+let playing: boolean = false
+
+
+export async function initializeGame() {
+    const Phaser = await import('phaser');
+
 
 class GameScene extends Phaser.Scene {
     constructor() {
@@ -26,18 +33,29 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('missile', 'lib/images/BulletTest.png');
-        this.load.image('launcher', 'lib/images/BulletTest.png');
-        this.load.image('explosion', 'lib/images/BulletTest.png');
+        
+        this.load.image('missile', '/missile.png');
+        this.load.image('launcher', '/launcher.png');
+        this.load.image('launcherBody', '/launcherBody.png');
+        //this.load.image('explosion', './lib/images/explosion.png');
     }
 
     create() {
-        // Create the player's missile launcher
-        launcher = new Launcher(this, [250, 490], 100, 200);
+
+        this.input.on('pointerdown', this.handleClick, this);
+
+        launcher = new Launcher(this, [395, 585], 100, 200);
         playing = true;
         startTime = performance.now();
         setLaunchTimes();
     }
+
+    handleClick() {
+        if (launcher.readyToFire()) {
+          const mousePosition = this.input.activePointer.position;
+          launcher.fire(this, [mousePosition.x, mousePosition.y], missiles);
+        }
+      }
 
     update() {
         if (get(paused)) { return; }
@@ -77,9 +95,10 @@ class GameScene extends Phaser.Scene {
             launchTimes = launchTimes.slice(0, index).concat(launchTimes.slice(index + 1));
         }
 
-        setTimeout(() => this.update(), tickLength);
+        //setTimeout(() => this.update(), tickLength);
         }
 }
+
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO, // Phaser will use WebGL if available, if not it will use Canvas
@@ -89,20 +108,23 @@ const config: Phaser.Types.Core.GameConfig = {
     scene: [new GameScene()]
     ,
     scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    },
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: 800, // Set the desired width of the game canvas
+        height: 600 // Set the desired height of the game canvas
+      },
     physics: {
         default: 'arcade',
         arcade: {
             //No gravity
-            gravity: { y: 0 },
+            gravity: { y: 0, x: 0 },
         }
     }
+}
+
+game.set(new Phaser.Game(config) as any);
+
 };
-
-export const game = new Phaser.Game(config);
-
 // Add a new incoming missile to the game
 
 
@@ -135,24 +157,8 @@ function addMissile(scene: Phaser.Scene) {
     missiles.push(missile);
 }
 
-/*function draw() {
-    //console.log("Drawing Game")
-    // Clear the screen
-    this.context.clearRect(0, 0, this.width, this.height);
-    this.context.fillStyle = 'black';
-    this.context.fillRect(0, 0, this.width, this.height);
-
-    // Draw the player's missile launcher
-    this.launcher.draw(this.context);
-
-    // Draw missiles
-    for (let i = 0; i < this.missiles.length; i++) {
-      this.missiles[i].draw(this.context);
-      //console.log( "Drawing Missile in Game")
-    }
-
-    // Draw the explosion effects
-    for (let i = 0; i < this.explosions.length; i++) {
-      this.explosions[i].draw(this.context);
-    }
-  } */
+function addExplosion(scene: Phaser.Scene, x: number, y: number, lifetime: number) {
+    // Create the explosion
+    const explosion = new Explosion(scene, x, y, lifetime);
+    explosions.push(explosion);
+}
