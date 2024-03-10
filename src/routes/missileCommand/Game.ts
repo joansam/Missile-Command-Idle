@@ -43,12 +43,26 @@ class GameScene extends Phaser.Scene {
     create() {
 
         this.input.on('pointerdown', this.handleClick, this);
+        this.physics.add.collider(missiles, explosions, (missile: Missile, explosion: Explosion) => {
+            // Perform collision handling logic here
+            // ...
+            missile.destroy();
+            explosion.destroy();
+
+        });
 
         launcher = new Launcher(this, [395, 585], 100, 200);
         playing = true;
         startTime = performance.now();
         setLaunchTimes();
     }
+
+    handleMissileExplosionCollision(missile:Phaser.Types.Physics.Arcade.GameObjectWithBody, explosion: Phaser.Types.Physics.Arcade.GameObjectWithBody): void {
+        // Handle the collision between a missile and an explosion
+        // e.g., destroy the missile, create a new explosion, etc.
+        missile.destroy();
+        //explosions.push(new Explosion(this, missile.x, missile.y, 5));
+      }
 
     handleClick() {
         if (launcher.readyToFire()) {
@@ -80,6 +94,7 @@ class GameScene extends Phaser.Scene {
 
             // Update the explosion effects
             explosions = explosions.filter(explosion => !explosion.update());
+            missiles = missiles.filter(missile => !missile.sprite.active);
             actionCounter -= actionLength;
         }
 
@@ -114,7 +129,7 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            //No gravity
+            debug: true,
             gravity: { y: 0, x: 0 },
         }
     }

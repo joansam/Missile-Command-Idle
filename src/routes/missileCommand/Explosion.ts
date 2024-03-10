@@ -1,4 +1,4 @@
-export class Explosion {
+export class Explosion extends Phaser.GameObjects.GameObject {
   // The explosion position
   x: number;
   y: number;
@@ -15,6 +15,7 @@ export class Explosion {
 
   // Initialize the explosion
   constructor(scene: Phaser.Scene, x: number, y: number, lifetime: number) {
+    super(scene, 'explosion')
     this.x = x;
     this.y = y;
     this.lifetime = lifetime;

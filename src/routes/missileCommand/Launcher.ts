@@ -1,7 +1,7 @@
 import {Missile} from './Missile'
 import { launcherPositionStore, missilePositionStore, mousePositionStore } from './stores'
 
-export class Launcher {
+export class Launcher extends Phaser.GameObjects.GameObject {
   direction: number //in degrees
   position: Phaser.Math.Vector2
   rotationSpeed: number //in degrees per second
@@ -19,6 +19,7 @@ export class Launcher {
   angle:number;
 
   constructor(scene: Phaser.Scene, position: [number, number], maxMissiles: number, missileSpeed: number) {
+    super(scene, 'launcher')
     this.scene = scene
     this.sprite = scene.add.sprite(position[0], position[1], 'launcher');
     this.spriteBody = scene.add.sprite(position[0] - 1.5, position[1] + 20, 'launcherBody');
